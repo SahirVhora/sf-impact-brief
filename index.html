@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:title" content="SF Impact Brief - Personalised SAP SuccessFactors Release Impact Reports">
+<meta property="og:description" content="Generate a personalised release impact brief from 492 SAP SuccessFactors updates. Select your modules, get a tiered action plan (Must Act / Should Test / Nice To Know) with upsell opportunities. Updated weekly, no login needed.">
+<meta property="og:image" content="https://sahirvhora.github.io/sf-impact-brief/preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sahirvhora.github.io/sf-impact-brief/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SF Impact Brief - Personalised SAP SuccessFactors Release Impact Reports">
+<meta name="twitter:description" content="Generate a personalised release impact brief from 492 SAP SuccessFactors updates. Select your modules, get a tiered action plan with upsell opportunities. Updated weekly.">
+<meta name="twitter:image" content="https://sahirvhora.github.io/sf-impact-brief/preview.png">
+<meta name="description" content="Generate personalised SAP SuccessFactors release impact briefs. Select your modules, get a tiered action plan (Must Act / Should Test / Nice To Know) with upsell opportunities. 492 updates, updated weekly.">
+<title>SF Impact Brief — Personalised SAP SuccessFactors Release Impact</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+/* =========== RESET & BASE =========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root,[data-theme="dark"]{
+  --bg:#090d14; --bg2:#0d1119; --bg3:#111620; --bg4:#171c28;
+  --text:#e6e9f0; --text2:#c5c9d4; --text3:#5f6675;
+  --accent:#c8a84e; --accent2:#e0c46e;
+  --critical:#e05151; --high:#e07b3c; --medium:#d4a434; --low:#3fb96b;
+  --border:#1c212b; --radius:6px; --radius-lg:10px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --theme-icon:'☀';
+}
+[data-theme="light"]{
+  --bg:#f8f6f2; --bg2:#f0ede8; --bg3:#e8e4dc; --bg4:#dcd7ce;
+  --text:#1a1815; --text2:#5a554a; --text3:#8a8278;
+  --accent:#5b4fd4; --accent2:#3d2fa8;
+  --critical:#c93030; --high:#bc5a26; --medium:#a67c18; --low:#287a3e;
+  --border:#dcd7ce; --radius:6px; --radius-lg:10px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+  --theme-icon:'☾';
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);line-height:1.6;min-height:100vh;transition:background .4s ease,color .4s ease}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* =========== HEADER =========== */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.header-logo .icon{font-size:20px}
+.header-meta{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--text2)}
+.theme-toggle-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s ease;flex-shrink:0}
+.theme-toggle-btn:hover{border-color:var(--accent);color:var(--accent2);box-shadow:0 0 16px rgba(200,168,78,.15);transform:rotate(15deg)}
+.theme-toggle-btn:active{transform:scale(.92) rotate(0)}
+
+/* =========== LAYOUT =========== */
+.page{padding:0 24px;max-width:900px;margin:0 auto}
+.intro{padding:48px 0 32px;text-align:center}
+.intro h1{font-size:28px;margin-bottom:8px}
+.intro p{color:var(--text2);font-size:15px;max-width:600px;margin:0 auto}
+.intro .badge{display:inline-block;background:var(--bg3);color:var(--accent2);padding:4px 12px;border-radius:20px;font-size:12px;font-family:var(--mono);margin-top:12px}
+
+/* =========== PROJECT NAME =========== */
+.project-row{display:flex;gap:10px;margin-bottom:24px}
+.project-row input{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);font-size:15px;font-family:var(--font);transition:border-color .2s}
+.project-row input:focus{outline:none;border-color:var(--accent)}
+.project-row input::placeholder{color:var(--text3)}
+
+/* =========== MODULE SELECTOR =========== */
+.selector-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:24px}
+.selector-card h3{font-size:14px;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:var(--text2)}
+.selector-card h3 .count{color:var(--accent2);font-family:var(--mono);font-size:12px}
+.group{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden}
+.group-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;user-select:none;transition:background .15s}
+.group-header:hover{background:var(--bg4)}
+.group-header .gname{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px}
+.group-header .gname .gicon{font-size:16px}
+.group-header .gcount{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.group-header .arrow{font-size:11px;color:var(--text3);transition:transform .2s}
+.group.open .group-header .arrow{transform:rotate(180deg)}
+.group-body{display:none;padding:0 14px 12px;border-top:1px solid var(--border)}
+.group.open .group-body{display:block}
+.module-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;cursor:pointer;user-select:none}
+.module-row:hover{color:var(--accent2)}
+.module-row input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+.module-row .mod-count{font-family:var(--mono);font-size:11px;color:var(--text3);margin-left:auto}
+
+/* =========== ACTIONS ROW =========== */
+.actions-row{display:flex;gap:10px;margin-bottom:40px;flex-wrap:wrap}
+.btn{padding:12px 24px;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .2s}
+.btn-primary{background:var(--accent);color:#000;flex:1;max-width:300px}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent2)}
+.btn-sm{padding:6px 12px;font-size:12px}
+
+/* =========== VERSION SELECTOR =========== */
+.version-row{display:flex;gap:4px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+.version-row span.label{font-size:12px;color:var(--text3);margin-right:8px}
+.ver-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.ver-btn:hover{border-color:var(--accent);color:var(--text)}
+.ver-btn.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:600}
+
+/* =========== BRIEF OUTPUT =========== */
+#brief-output{display:none}
+.brief-header{text-align:center;padding:40px 0 32px}
+.brief-header h2{font-size:24px;margin-bottom:6px}
+.brief-header .meta{color:var(--text2);font-size:13px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.brief-header .meta span{background:var(--bg3);padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:12px}
+
+.summary-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:32px;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.summary-item{text-align:center}
+.summary-item .num{font-size:32px;font-weight:700;font-family:var(--mono)}
+.summary-item .label{font-size:12px;color:var(--text3);margin-top:4px}
+.summary-item.critical .num{color:var(--critical)}
+.summary-item.high .num{color:var(--high)}
+.summary-item.medium .num{color:var(--medium)}
+.summary-item.low .num{color:var(--low)}
+
+.tier-section{margin-bottom:32px}
+.tier-heading{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.tier-heading h3{font-size:16px}
+.tier-heading .badge-count{background:var(--bg3);padding:2px 10px;border-radius:12px;font-size:12px;font-family:var(--mono)}
+.tier-mustact .tier-heading{border-bottom-color:var(--critical)}
+.tier-mustact .tier-heading h3{color:var(--critical)}
+.tier-test .tier-heading{border-bottom-color:var(--high)}
+.tier-test .tier-heading h3{color:var(--high)}
+.tier-nice .tier-heading{border-bottom-color:var(--low)}
+.tier-nice .tier-heading h3{color:var(--low)}
+
+.update-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;transition:border-color .15s}
+.update-card:hover{border-color:var(--accent)}
+.update-card .uc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+.update-card .uc-title{font-weight:600;font-size:14px;flex:1}
+.update-card .uc-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0}
+.update-card .uc-tag{padding:2px 8px;border-radius:4px;font-size:11px;font-family:var(--mono);font-weight:600}
+.tag-critical{background:rgba(224,81,81,.15);color:var(--critical)}
+.tag-high{background:rgba(224,123,60,.15);color:var(--high)}
+.tag-medium{background:rgba(212,164,52,.15);color:var(--medium)}
+.tag-low{background:rgba(63,185,107,.15);color:var(--low)}
+.tag-new{background:rgba(91,79,212,.15);color:var(--accent2)}
+.update-card .uc-summary{font-size:13px;color:var(--text2);margin-bottom:8px;line-height:1.5}
+.update-card .uc-module{font-size:11px;color:var(--text3)}
+.update-card .uc-link{font-size:11px;margin-top:4px}
+.update-card .uc-link a{color:var(--accent2);font-size:11px}
+
+/* =========== UPSELL =========== */
+.upsell-section{background:var(--bg2);border:1px solid var(--accent);border-radius:var(--radius-lg);padding:20px;margin-bottom:32px}
+.upsell-section .upsell-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;color:var(--accent2);font-weight:700;font-size:14px}
+.upsell-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.upsell-item:last-child{border-bottom:none}
+.upsell-item .ui-module{color:var(--text3);font-size:11px}
+.upsell-item .ui-title{flex:1;margin:0 12px}
+
+/* =========== BRIEF ACTIONS =========== */
+.brief-actions{display:flex;gap:10px;margin-bottom:48px;flex-wrap:wrap;justify-content:center}
+
+/* =========== EMPTY STATE =========== */
+.empty-state{text-align:center;padding:60px 0;color:var(--text3)}
+.empty-state .big-icon{font-size:48px;margin-bottom:16px}
+.empty-state p{font-size:14px}
+
+/* =========== LOADING =========== */
+.loading{text-align:center;padding:60px 0}
+.loading .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* =========== PRINT =========== */
+@media print{
+  body{background:#fff!important;color:#000!important}
+  .header{display:none}
+  .page{padding:0;max-width:100%}
+  #setup-view{display:none!important}
+  #brief-output{display:block!important}
+  .update-card{border:1px solid #ddd;break-inside:avoid}
+  .brief-actions{display:none}
+  .btn{display:none}
+}
+
+/* =========== RESPONSIVE =========== */
+@media(max-width:600px){
+  .header{padding:0 14px}
+  .page{padding:0 14px}
+  .intro h1{font-size:22px}
+  .summary-box{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">
+    <span class="icon">🎯</span> SF Impact Brief
+  </div>
+  <div class="header-meta">
+    <span>Data from <a href="https://sahirvhora.github.io/sf-release-update/" target="_blank">SF Release Update</a></span>
+    <button class="theme-toggle-btn" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme"></button>
+  </div>
+</div>
+
+<div class="page">
+  <!-- ===== SETUP VIEW ===== -->
+  <div id="setup-view">
+    <div class="intro">
+      <h1>Release Impact Brief</h1>
+      <p>Select the modules your client uses. Get a personalised brief of what's changing, what to test, and what's coming — filtered from 492 SAP SuccessFactors release updates.</p>
+      <span class="badge">Updated weekly · No login · Free</span>
+    </div>
+
+    <div class="project-row">
+      <input type="text" id="project-name" placeholder="Client or project name (e.g. Acme Corp — EC + Comp)" maxlength="80">
+    </div>
+
+    <div class="selector-card">
+      <h3>Select Modules <span class="count" id="selected-count">0 selected</span></h3>
+      <div id="module-groups"></div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-sm btn-outline" onclick="selectAll()">Select All</button>
+        <button class="btn btn-sm btn-outline" onclick="clearAll()">Clear All</button>
+      </div>
+    </div>
+
+    <div class="version-row">
+      <span class="label">Version:</span>
+      <button class="ver-btn active" data-ver="all">All Releases</button>
+      <button class="ver-btn" data-ver="1H 2026">1H 2026</button>
+      <button class="ver-btn" data-ver="2H 2026">2H 2026</button>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-primary" id="generate-btn" onclick="generateBrief()">Generate Brief</button>
+      <button class="btn btn-outline" onclick="window.open('https://sahirvhora.github.io/sf-release-update/','_blank')">Browse All Updates</button>
+    </div>
+  </div>
+
+  <!-- ===== BRIEF OUTPUT ===== -->
+  <div id="brief-output">
+    <div class="brief-header">
+      <h2 id="brief-title">Release Impact Brief</h2>
+      <div class="meta">
+        <span id="brief-date"></span>
+        <span id="brief-modules"></span>
+        <span id="brief-version"></span>
+      </div>
+    </div>
+
+    <div class="summary-box" id="summary-box"></div>
+
+    <div id="tiers-container"></div>
+
+    <div class="upsell-section" id="upsell-section" style="display:none">
+      <div class="upsell-head">💡 Upsell Opportunities — New features you could implement</div>
+      <div id="upsell-list"></div>
+    </div>
+
+    <div class="brief-actions">
+      <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+      <button class="btn btn-outline" onclick="exportJSON()">Export JSON</button>
+      <button class="btn btn-outline" onclick="startOver()">New Brief</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========== DATA ===========
+const DATA_URL = 'https://sahirvhora.github.io/sf-release-update/data/updates.json';
+
+const MODULE_GROUPS = {
+  'Employee Central': {icon:'🏢', modules:['Employee Data','Company Organization','Contingent Workforce','Time Management','Global Benefits','Localization','Documents and Storage','Foundation Management','Public Sector Management']},
+  'Compensation': {icon:'💰', modules:['Compensation','Variable Pay','Rewards and Recognition']},
+  'Talent Management': {icon:'⭐', modules:['Performance Management','Continuous Performance Management','Goal Management','Career Development','360 Reviews','Calibration','Succession Planning']},
+  'Recruiting & Onboarding': {icon:'👋', modules:['Applicant Management','Candidate Experience','Job Requisition','Onboarding']},
+  'Platform & Integration': {icon:'⚙', modules:['Identity and Access Management','Integration and Extension','Security and Compliance','System Management','Reporting','Process Automation','Analytics','Mobile Applications','User Experience']},
+  'Learning & Content': {icon:'📚', modules:['Content Access','Content Delivery','Content Discovery','Content Management']},
+  'AI & Innovation': {icon:'🤖', modules:['SAP Business AI','Talent Intelligence Hub','Opportunity Marketplace']},
+  'Payroll': {icon:'💳', modules:['Payroll']}
+};
+
+let allUpdates = [];
+let moduleUpdateCounts = {};
+
+// =========== INIT ===========
+document.addEventListener('DOMContentLoaded', () => {
+  updateThemeIcon();
+  buildModuleSelector();
+  loadData();
+});
+
+function updateThemeIcon(){
+  const theme = document.documentElement.getAttribute('data-theme');
+  document.querySelector('.theme-toggle-btn').textContent = theme === 'dark' ? '☀' : '☾';
+}
+
+function toggleTheme(){
+  const el = document.documentElement;
+  const next = el.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  el.setAttribute('data-theme', next);
+  updateThemeIcon();
+  localStorage.setItem('sf-impact-brief-theme', next);
+}
+
+// Restore theme
+(function(){
+  const saved = localStorage.getItem('sf-impact-brief-theme');
+  if(saved) document.documentElement.setAttribute('data-theme', saved);
+  updateThemeIcon();
+})();
+
+// =========== VERSION SELECTOR ===========
+document.querySelectorAll('.ver-btn').forEach(btn => {
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.ver-btn').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+// =========== DATA LOADING ===========
+async function loadData(){
+  try {
+    const resp = await fetch(DATA_URL);
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    allUpdates = data.items || [];
+    // Count updates per module
+    moduleUpdateCounts = {};
+    allUpdates.forEach(u => {
+      const m = u.module || 'Unknown';
+      moduleUpdateCounts[m] = (moduleUpdateCounts[m] || 0) + 1;
+    });
+    updateModuleCounts();
+    // Set version buttons based on actual available versions
+    const versions = new Set(allUpdates.map(u => u.releaseVersion).filter(Boolean));
+    const verRow = document.querySelector('.version-row');
+    let verHtml = '<span class="label">Version:</span><button class="ver-btn active" data-ver="all">All Releases</button>';
+    [...versions].sort().forEach(v => {
+      verHtml += `<button class="ver-btn" data-ver="${v.replace(/"/g,'&quot;')}">${v}</button>`;
+    });
+    verRow.innerHTML = verHtml;
+    // Rebind version buttons
+    verRow.querySelectorAll('.ver-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        verRow.querySelectorAll('.ver-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  } catch(e){
+    document.getElementById('module-groups').innerHTML = `<div class="empty-state"><div class="big-icon">⚠</div><p>Could not load release data.<br><small>${e.message}</small><br><br><a href="${DATA_URL}" target="_blank">Check if data is available</a></p></div>`;
+    document.getElementById('generate-btn').disabled = true;
+  }
+}
+
+function updateModuleCounts(){
+  document.querySelectorAll('.mod-count').forEach(el => {
+    const mod = el.dataset.module;
+    el.textContent = (moduleUpdateCounts[mod] || 0) + ' updates';
+  });
+}
+
+// =========== MODULE SELECTOR ===========
+function buildModuleSelector(){
+  const container = document.getElementById('module-groups');
+  let html = '';
+  for(const [group, info] of Object.entries(MODULE_GROUPS)){
+    const modsInGroup = info.modules.filter(m => allUpdates.length === 0 || moduleUpdateCounts[m]);
+    if(modsInGroup.length === 0) continue;
+    html += `<div class="group open"><div class="group-header" onclick="this.parentElement.classList.toggle('open')"><span class="gname"><span class="gicon">${info.icon}</span>${group}</span><span class="gcount">${modsInGroup.length} modules</span><span class="arrow">▼</span></div><div class="group-body">`;
+    info.modules.forEach(mod => {
+      html += `<label class="module-row"><input type="checkbox" value="${mod.replace(/"/g,'&quot;')}" onchange="updateSelectedCount()"><span>${mod}</span><span class="mod-count" data-module="${mod.replace(/"/g,'&quot;')}">${moduleUpdateCounts[mod] || 0} updates</span></label>`;
+    });
+    html += '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function selectAll(){
+  document.querySelectorAll('#module-groups input[type=checkbox]').forEach(cb => { cb.checked = true; });
+  updateSelectedCount();
+}
+
+function clearAll(){
+  document.querySelectorAll('#module-groups input[type=checkbox]').forEach(cb => { cb.checked = false; });
+  updateSelectedCount();
+}
+
+function updateSelectedCount(){
+  const n = document.querySelectorAll('#module-groups input[type=checkbox]:checked').length;
+  document.getElementById('selected-count').textContent = n + ' selected';
+}
+
+function getSelectedModules(){
+  return [...document.querySelectorAll('#module-groups input[type=checkbox]:checked')].map(cb => cb.value);
+}
+
+function getSelectedVersion(){
+  const active = document.querySelector('.ver-btn.active');
+  return active ? active.dataset.ver : 'all';
+}
+
+// =========== BRIEF GENERATION ===========
+function generateBrief(){
+  const modules = getSelectedModules();
+  if(modules.length === 0){
+    alert('Please select at least one module.');
+    return;
+  }
+
+  const version = getSelectedVersion();
+  const projectName = document.getElementById('project-name').value.trim() || 'Unnamed Project';
+
+  // Filter
+  let filtered = allUpdates.filter(u => modules.includes(u.module));
+  if(version !== 'all'){
+    filtered = filtered.filter(u => u.releaseVersion === version);
+  }
+
+  if(filtered.length === 0){
+    alert('No updates found for the selected modules and version combination.');
+    return;
+  }
+
+  // Tier classification
+  const mustAct = [];
+  const shouldTest = [];
+  const niceToKnow = [];
+  const upsell = [];
+
+  filtered.forEach(u => {
+    const impact = (u.impact && u.impact.level) || 'low';
+    const action = (u.action || '').toLowerCase();
+    const enablement = (u.enablement || '').toLowerCase();
+    const refNumber = (u.refNumber || '').toLowerCase();
+    const isDeprecated = action === 'deprecated' || action === 'deleted' || refNumber === 'deprecated';
+
+    // Upsell: new features that need implementation
+    if(action === 'new' && (enablement === 'customer configured' || enablement === 'minor' || enablement === 'major')){
+      upsell.push(u);
+    }
+
+    if(impact === 'critical' || isDeprecated){
+      mustAct.push(u);
+    } else if(impact === 'high'){
+      shouldTest.push(u);
+    } else {
+      niceToKnow.push(u);
+    }
+  });
+
+  // Show brief
+  document.getElementById('setup-view').style.display = 'none';
+  document.getElementById('brief-output').style.display = 'block';
+
+  // Header
+  document.getElementById('brief-title').textContent = `Release Impact Brief — ${projectName}`;
+  document.getElementById('brief-date').textContent = new Date().toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('brief-modules').textContent = `${modules.length} modules`;
+  document.getElementById('brief-version').textContent = version === 'all' ? 'All Versions' : version;
+
+  // Summary
+  document.getElementById('summary-box').innerHTML = `
+    <div class="summary-item critical"><div class="num">${mustAct.length}</div><div class="label">MUST ACT</div></div>
+    <div class="summary-item high"><div class="num">${shouldTest.length}</div><div class="label">SHOULD TEST</div></div>
+    <div class="summary-item medium"><div class="num">${niceToKnow.length}</div><div class="label">NICE TO KNOW</div></div>
+    <div class="summary-item low"><div class="num">${upsell.length}</div><div class="label">UPSELL</div></div>
+  `;
+
+  // Tiers
+  let tiersHtml = '';
+
+  if(mustAct.length > 0){
+    tiersHtml += `<div class="tier-section tier-mustact"><div class="tier-heading"><h3>🔴 MUST ACT</h3><span class="badge-count">${mustAct.length} items</span></div><p style="font-size:13px;color:var(--text2);margin-bottom:12px">These changes will break something or require immediate action. Prioritise these first.</p>`;
+    mustAct.forEach(u => tiersHtml += updateCard(u));
+    tiersHtml += '</div>';
+  } else {
+    tiersHtml += `<div class="tier-section tier-mustact"><div class="tier-heading"><h3>🔴 MUST ACT</h3><span class="badge-count">0 items</span></div><p style="font-size:13px;color:var(--text3)">No critical or breaking changes for your selected modules. 🎉</p></div>`;
+  }
+
+  if(shouldTest.length > 0){
+    tiersHtml += `<div class="tier-section tier-test"><div class="tier-heading"><h3>🟠 SHOULD TEST</h3><span class="badge-count">${shouldTest.length} items</span></div><p style="font-size:13px;color:var(--text2);margin-bottom:12px">High-impact changes that auto-enable. Test these in your sandbox before release.</p>`;
+    shouldTest.forEach(u => tiersHtml += updateCard(u));
+    tiersHtml += '</div>';
+  } else {
+    tiersHtml += `<div class="tier-section tier-test"><div class="tier-heading"><h3>🟠 SHOULD TEST</h3><span class="badge-count">0 items</span></div><p style="font-size:13px;color:var(--text3)">No auto-enabling high-impact changes for your modules.</p></div>`;
+  }
+
+  tiersHtml += `<div class="tier-section tier-nice"><div class="tier-heading"><h3>🟢 NICE TO KNOW</h3><span class="badge-count">${niceToKnow.length} items</span></div><p style="font-size:13px;color:var(--text2);margin-bottom:12px">General updates — worth reviewing but no urgent action needed.</p>`;
+  niceToKnow.forEach(u => tiersHtml += updateCard(u));
+  tiersHtml += '</div>';
+
+  document.getElementById('tiers-container').innerHTML = tiersHtml;
+
+  // Upsell
+  if(upsell.length > 0){
+    document.getElementById('upsell-section').style.display = 'block';
+    let upsellHtml = '';
+    upsell.forEach(u => {
+      upsellHtml += `<div class="upsell-item"><span class="ui-module">${u.module}</span><span class="ui-title">${u.title}</span><span class="ui-module">${u.enablement || 'New'}</span></div>`;
+    });
+    document.getElementById('upsell-list').innerHTML = upsellHtml;
+  } else {
+    document.getElementById('upsell-section').style.display = 'none';
+  }
+
+  window.scrollTo(0,0);
+}
+
+function updateCard(u){
+  const impact = (u.impact && u.impact.level) || 'low';
+  const impactLabel = (u.impact && u.impact.label) || 'Low';
+  const tagClass = `tag-${impact}`;
+  let actionBadge = '';
+  if(u.action && u.action.toLowerCase() === 'new') actionBadge = '<span class="uc-tag tag-new">NEW</span>';
+  const link = u.sapLink ? `<div class="uc-link"><a href="${u.sapLink}" target="_blank">View on SAP Help →</a></div>` : '';
+
+  return `<div class="update-card">
+    <div class="uc-top">
+      <div class="uc-title">${u.title}</div>
+      <div class="uc-meta">
+        <span class="uc-tag ${tagClass}">${impactLabel}</span>
+        ${actionBadge}
+      </div>
+    </div>
+    <div class="uc-summary">${u.plainEnglish || u.description || ''}</div>
+    <div class="uc-module">${u.module}${u.product && u.product !== u.module ? ' · ' + u.product : ''}${u.releaseVersion ? ' · ' + u.releaseVersion : ''}</div>
+    ${link}
+  </div>`;
+}
+
+function exportJSON(){
+  const modules = getSelectedModules();
+  const version = getSelectedVersion();
+  const projectName = document.getElementById('project-name').value.trim() || 'Unnamed Project';
+
+  let filtered = allUpdates.filter(u => modules.includes(u.module));
+  if(version !== 'all') filtered = filtered.filter(u => u.releaseVersion === version);
+
+  const brief = {
+    projectName,
+    generatedAt: new Date().toISOString(),
+    version,
+    modules,
+    totalUpdates: filtered.length,
+    items: filtered
+  };
+
+  const blob = new Blob([JSON.stringify(brief, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sf-impact-brief-${projectName.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function startOver(){
+  document.getElementById('brief-output').style.display = 'none';
+  document.getElementById('setup-view').style.display = 'block';
+  window.scrollTo(0,0);
+}
+</script>
+
+</body>
+</html>
