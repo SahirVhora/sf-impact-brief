@@ -171,6 +171,15 @@ a:hover{text-decoration:underline}
 
 /* =========== BRIEF ACTIONS =========== */
 .brief-actions{display:flex;gap:10px;margin-bottom:48px;flex-wrap:wrap;justify-content:center}
+.client-pack{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:32px}
+.client-pack h3{font-size:16px;margin-bottom:10px;color:var(--accent2)}
+.client-pack-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.client-pack-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.client-pack-card h4{font-size:13px;margin-bottom:6px}
+.client-pack-card ul{padding-left:18px;font-size:12px;color:var(--text2)}
+.stakeholder-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.stakeholder-tabs button{padding:7px 12px;border:1px solid var(--border);border-radius:20px;background:var(--bg3);color:var(--text2);cursor:pointer}
+.stakeholder-tabs button.active{background:var(--accent);color:#000;border-color:var(--accent)}
 
 /* =========== EMPTY STATE =========== */
 .empty-state{text-align:center;padding:60px 0;color:var(--text3)}
@@ -263,6 +272,8 @@ a:hover{text-decoration:underline}
 
     <div class="summary-box" id="summary-box"></div>
 
+    <div id="client-pack"></div>
+
     <div id="tiers-container"></div>
 
     <div class="upsell-section" id="upsell-section" style="display:none">
@@ -271,7 +282,8 @@ a:hover{text-decoration:underline}
     </div>
 
     <div class="brief-actions">
-      <button class="btn btn-primary" onclick="window.print()">Print / Save PDF</button>
+      <button class="btn btn-primary" onclick="window.print()">PDF Summary</button>
+      <button class="btn btn-outline" onclick="exportClientPack()">Export Client Pack</button>
       <button class="btn btn-outline" onclick="exportJSON()">Export JSON</button>
       <button class="btn btn-outline" onclick="startOver()">New Brief</button>
     </div>
@@ -480,6 +492,8 @@ function generateBrief(){
     <div class="summary-item low"><div class="num">${upsell.length}</div><div class="label">UPSELL</div></div>
   `;
 
+  renderClientPack(projectName, modules, version, mustAct, shouldTest, niceToKnow, upsell);
+
   // Tiers
   let tiersHtml = '';
 
@@ -518,6 +532,66 @@ function generateBrief(){
   }
 
   window.scrollTo(0,0);
+}
+
+function ownerForUpdate(u){
+  const mod = (u.module || '').toLowerCase();
+  if(mod.includes('employee') || mod.includes('time') || mod.includes('benefit')) return 'HRIS / EC owner';
+  if(mod.includes('comp') || mod.includes('pay')) return 'Reward owner';
+  if(mod.includes('recruit') || mod.includes('onboard')) return 'Talent acquisition owner';
+  if(mod.includes('integration') || mod.includes('security') || mod.includes('identity')) return 'IT integration owner';
+  return 'Module process owner';
+}
+
+function stakeholderView(items, role){
+  const roleMap = {executive:['critical','high'], testing:['critical','high','medium'], change:['high','medium','low']};
+  const levels = roleMap[role] || roleMap.executive;
+  return items.filter(u => levels.includes(((u.impact && u.impact.level) || 'low'))).slice(0, 8);
+}
+
+function renderClientPack(projectName, modules, version, mustAct, shouldTest, niceToKnow, upsell){
+  const allItems = mustAct.concat(shouldTest, niceToKnow);
+  const testItems = shouldTest.concat(mustAct).slice(0, 8);
+  const trackerItems = mustAct.concat(shouldTest).slice(0, 10);
+  const testPlan = testItems.map((u,i) => `<li>Test ${i+1}: ${u.module} - validate ${u.title}</li>`).join('') || '<li>No focused test cases required for selected modules.</li>';
+  const tracker = trackerItems.map(u => `<li>${ownerForUpdate(u)}: ${u.title}</li>`).join('') || '<li>No release actions required beyond awareness review.</li>';
+  const stakeholder = stakeholderView(allItems, 'executive').map(u => `<li>${u.module}: ${u.title}</li>`).join('') || '<li>No executive risks found.</li>';
+  document.getElementById('client-pack').innerHTML = `<div class="client-pack">
+    <h3>Exportable client pack</h3>
+    <p style="font-size:13px;color:var(--text2)">Includes PDF summary, test plan, release action tracker and stakeholder-specific view for ${projectName}.</p>
+    <div class="stakeholder-tabs">
+      <button class="active" onclick="switchStakeholderView(this,'executive')">Executive</button>
+      <button onclick="switchStakeholderView(this,'testing')">Testing</button>
+      <button onclick="switchStakeholderView(this,'change')">Change</button>
+    </div>
+    <div class="client-pack-grid">
+      <div class="client-pack-card"><h4>PDF summary</h4><ul><li>${modules.length} selected modules</li><li>${version === 'all' ? 'All releases' : version}</li><li>${mustAct.length} must act items</li></ul></div>
+      <div class="client-pack-card"><h4>Test plan</h4><ul>${testPlan}</ul></div>
+      <div class="client-pack-card"><h4>Release action tracker</h4><ul>${tracker}</ul></div>
+      <div class="client-pack-card"><h4 id="stakeholder-title">Executive view</h4><ul id="stakeholder-list">${stakeholder}</ul></div>
+    </div>
+  </div>`;
+}
+
+function switchStakeholderView(btn, role){
+  document.querySelectorAll('.stakeholder-tabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cards = Array.from(document.querySelectorAll('.update-card')).map(c => ({title:c.querySelector('.uc-title')?.textContent || '', module:c.querySelector('.uc-module')?.textContent || '', impact:{level:c.querySelector('.uc-tag')?.textContent.toLowerCase() || 'low'}}));
+  const items = cards.slice(0, role === 'executive' ? 5 : 10);
+  document.getElementById('stakeholder-title').textContent = role.charAt(0).toUpperCase() + role.slice(1) + ' view';
+  document.getElementById('stakeholder-list').innerHTML = items.map(i => '<li>' + i.module + ': ' + i.title + '</li>').join('') || '<li>No items for this view.</li>';
+}
+
+function exportClientPack(){
+  const pack = document.getElementById('client-pack').innerText + '\n\n' + document.getElementById('tiers-container').innerText;
+  const projectName = document.getElementById('project-name').value.trim() || 'Unnamed Project';
+  const blob = new Blob([pack], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sf-client-pack-${projectName.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function updateCard(u){
