@@ -89,3 +89,15 @@ This project is part of a wider SAP SuccessFactors supplementary tools suite. St
 | SF Value Navigator | Value realisation and sponsor-facing consulting framework |
 | SF Position Integrity Checker | Position hierarchy, incumbency, and EC data-quality validation |
 | SAPSF ObjectSync | Controlled foundation-object synchronisation between SF environments |
+
+---
+
+## Part of the SF Compass Suite
+
+One of 10 free, open tools for SAP SuccessFactors consultants. Explore the full suite at [SF Compass](https://sahirvhora.github.io/sf-compass/).
+
+Related tools:
+
+- [Release Tracker](https://github.com/SahirVhora/sf-release-update) - Live tracker for 1H/2H release changes
+- [Value Navigator](https://github.com/SahirVhora/sf-value-navigator) - Value realisation consulting framework
+- [Pay Transparency](https://github.com/SahirVhora/sf-pay-transparency) - EU Pay Transparency Directive readiness
