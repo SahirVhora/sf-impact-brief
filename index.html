@@ -343,6 +343,16 @@ document.querySelectorAll('.ver-btn').forEach(btn => {
   });
 });
 
+// =========== HTML ESCAPING (XSS guard for remote/user data) ===========
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escUrl(u){
+  u = String(u == null ? '' : u);
+  return /^https?:\/\//i.test(u) ? esc(u) : '#';
+}
+
 // =========== DATA LOADING ===========
 async function loadData(){
   try {
@@ -362,7 +372,7 @@ async function loadData(){
     const verRow = document.querySelector('.version-row');
     let verHtml = '<span class="label">Version:</span><button class="ver-btn active" data-ver="all">All Releases</button>';
     [...versions].sort().forEach(v => {
-      verHtml += `<button class="ver-btn" data-ver="${v.replace(/"/g,'&quot;')}">${v}</button>`;
+      verHtml += `<button class="ver-btn" data-ver="${esc(v)}">${esc(v)}</button>`;
     });
     verRow.innerHTML = verHtml;
     // Rebind version buttons
@@ -373,7 +383,7 @@ async function loadData(){
       });
     });
   } catch(e){
-    document.getElementById('module-groups').innerHTML = `<div class="empty-state"><div class="big-icon">⚠</div><p>Could not load release data.<br><small>${e.message}</small><br><br><a href="${DATA_URL}" target="_blank">Check if data is available</a></p></div>`;
+    document.getElementById('module-groups').innerHTML = `<div class="empty-state"><div class="big-icon">⚠</div><p>Could not load release data.<br><small>${esc(e.message)}</small><br><br><a href="${escUrl(DATA_URL)}" target="_blank">Check if data is available</a></p></div>`;
     document.getElementById('generate-btn').disabled = true;
   }
 }
@@ -524,7 +534,7 @@ function generateBrief(){
     document.getElementById('upsell-section').style.display = 'block';
     let upsellHtml = '';
     upsell.forEach(u => {
-      upsellHtml += `<div class="upsell-item"><span class="ui-module">${u.module}</span><span class="ui-title">${u.title}</span><span class="ui-module">${u.enablement || 'New'}</span></div>`;
+      upsellHtml += `<div class="upsell-item"><span class="ui-module">${esc(u.module)}</span><span class="ui-title">${esc(u.title)}</span><span class="ui-module">${esc(u.enablement || 'New')}</span></div>`;
     });
     document.getElementById('upsell-list').innerHTML = upsellHtml;
   } else {
@@ -553,12 +563,12 @@ function renderClientPack(projectName, modules, version, mustAct, shouldTest, ni
   const allItems = mustAct.concat(shouldTest, niceToKnow);
   const testItems = shouldTest.concat(mustAct).slice(0, 8);
   const trackerItems = mustAct.concat(shouldTest).slice(0, 10);
-  const testPlan = testItems.map((u,i) => `<li>Test ${i+1}: ${u.module} - validate ${u.title}</li>`).join('') || '<li>No focused test cases required for selected modules.</li>';
-  const tracker = trackerItems.map(u => `<li>${ownerForUpdate(u)}: ${u.title}</li>`).join('') || '<li>No release actions required beyond awareness review.</li>';
-  const stakeholder = stakeholderView(allItems, 'executive').map(u => `<li>${u.module}: ${u.title}</li>`).join('') || '<li>No executive risks found.</li>';
+  const testPlan = testItems.map((u,i) => `<li>Test ${i+1}: ${esc(u.module)} - validate ${esc(u.title)}</li>`).join('') || '<li>No focused test cases required for selected modules.</li>';
+  const tracker = trackerItems.map(u => `<li>${esc(ownerForUpdate(u))}: ${esc(u.title)}</li>`).join('') || '<li>No release actions required beyond awareness review.</li>';
+  const stakeholder = stakeholderView(allItems, 'executive').map(u => `<li>${esc(u.module)}: ${esc(u.title)}</li>`).join('') || '<li>No executive risks found.</li>';
   document.getElementById('client-pack').innerHTML = `<div class="client-pack">
     <h3>Exportable client pack</h3>
-    <p style="font-size:13px;color:var(--text2)">Includes PDF summary, test plan, release action tracker and stakeholder-specific view for ${projectName}.</p>
+    <p style="font-size:13px;color:var(--text2)">Includes PDF summary, test plan, release action tracker and stakeholder-specific view for ${esc(projectName)}.</p>
     <div class="stakeholder-tabs">
       <button class="active" onclick="switchStakeholderView(this,'executive')">Executive</button>
       <button onclick="switchStakeholderView(this,'testing')">Testing</button>
@@ -579,7 +589,7 @@ function switchStakeholderView(btn, role){
   const cards = Array.from(document.querySelectorAll('.update-card')).map(c => ({title:c.querySelector('.uc-title')?.textContent || '', module:c.querySelector('.uc-module')?.textContent || '', impact:{level:c.querySelector('.uc-tag')?.textContent.toLowerCase() || 'low'}}));
   const items = cards.slice(0, role === 'executive' ? 5 : 10);
   document.getElementById('stakeholder-title').textContent = role.charAt(0).toUpperCase() + role.slice(1) + ' view';
-  document.getElementById('stakeholder-list').innerHTML = items.map(i => '<li>' + i.module + ': ' + i.title + '</li>').join('') || '<li>No items for this view.</li>';
+  document.getElementById('stakeholder-list').innerHTML = items.map(i => '<li>' + esc(i.module) + ': ' + esc(i.title) + '</li>').join('') || '<li>No items for this view.</li>';
 }
 
 function exportClientPack(){
@@ -597,21 +607,21 @@ function exportClientPack(){
 function updateCard(u){
   const impact = (u.impact && u.impact.level) || 'low';
   const impactLabel = (u.impact && u.impact.label) || 'Low';
-  const tagClass = `tag-${impact}`;
+  const tagClass = `tag-${esc(impact)}`;
   let actionBadge = '';
   if(u.action && u.action.toLowerCase() === 'new') actionBadge = '<span class="uc-tag tag-new">NEW</span>';
-  const link = u.sapLink ? `<div class="uc-link"><a href="${u.sapLink}" target="_blank">View on SAP Help →</a></div>` : '';
+  const link = u.sapLink ? `<div class="uc-link"><a href="${escUrl(u.sapLink)}" target="_blank">View on SAP Help →</a></div>` : '';
 
   return `<div class="update-card">
     <div class="uc-top">
-      <div class="uc-title">${u.title}</div>
+      <div class="uc-title">${esc(u.title)}</div>
       <div class="uc-meta">
-        <span class="uc-tag ${tagClass}">${impactLabel}</span>
+        <span class="uc-tag ${tagClass}">${esc(impactLabel)}</span>
         ${actionBadge}
       </div>
     </div>
-    <div class="uc-summary">${u.plainEnglish || u.description || ''}</div>
-    <div class="uc-module">${u.module}${u.product && u.product !== u.module ? ' · ' + u.product : ''}${u.releaseVersion ? ' · ' + u.releaseVersion : ''}</div>
+    <div class="uc-summary">${esc(u.plainEnglish || u.description || '')}</div>
+    <div class="uc-module">${esc(u.module)}${u.product && u.product !== u.module ? ' · ' + esc(u.product) : ''}${u.releaseVersion ? ' · ' + esc(u.releaseVersion) : ''}</div>
     ${link}
   </div>`;
 }
