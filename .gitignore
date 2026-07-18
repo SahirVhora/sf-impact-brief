@@ -2,3 +2,7 @@ __pycache__/
 *.pyc
 .DS_Store
 .env
+
+.audit-result.json
+.claude/settings.local.json
+.under-anything/
